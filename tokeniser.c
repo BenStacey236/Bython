@@ -44,6 +44,7 @@ int indentTop = 0;
 
 /**
  * Handles changes in indentation and when to add indent and dedent tokens
+ * @param tokenList A pointer to the TokenList tokens should be added to
  * @param newIndent The new indentation level of the current line
  * @param lineNum An integer line number currently operating on
  * @see
@@ -80,6 +81,7 @@ void handle_indentation(TokenList *tokenList, int newIndent, int lineNum)
 
 /**
  * Tokenises a line provided as a string
+ * @param tokenList A pointer to the TokenList tokens should be added to
  * @param line A pointer to the start of the line
  * @param lineNum An integer line number of the current line
  * @see
@@ -175,7 +177,7 @@ void tokenise_line(TokenList *tokenList, char *line, int lineNum)
  * Tokenises a a whole file and populates the tokens array with Token structs
  * @param filePath A string of the filePath of the file to tokenise
  * @see
- * @return 0 if successful tokenisation, 1 if tokenisation failed
+ * @return A pointer to the TokenList containing all of the tokens from the tokenised file
  */
 TokenList *tokenise(const char *filePath) 
 {

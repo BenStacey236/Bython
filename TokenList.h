@@ -2,6 +2,9 @@
 #ifndef TOKEN_LIST_H
 #define TOKEN_LIST_H
 
+
+/* ----- Type Declarations ----- */
+
 // Enum defining token types
 typedef enum
 {   
@@ -58,17 +61,9 @@ typedef struct
 /* ----- Function Declarations ----- */
 
 TokenList *new_tokenlist();
-
-
 void append_token(TokenList *list, TokenType type, const char *lexeme, int lineNum);
-
-
 void print_tokenlist(TokenList *list);
-
-
 void free_tokenlist_node(TokenListNode *node);
-
-
 void free_tokenlist(TokenList *list);
 
 #endif // TOKEN_LIST_H
