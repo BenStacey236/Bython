@@ -1,37 +1,13 @@
-# include <stdio.h>
-# include <stdlib.h>
-# include <string.h>
-# include <regex.h>
-# include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <regex.h>
+#include <stdbool.h>
 
+#include "TokenList.h"
 
-# define MAX_TOKENS 1000                // Max number of tokens in the token list
-# define MAX_INDENT_STACK_SIZE 100      // Max amount of indentation levels
-# define NUM_TOKEN_PATTERNS 7           // The number of token patterns in the TOKEN_PATTERNS array
-
-
-// Enum defining token types
-typedef enum
-{   
-    TOKEN_IDENTIFIER,       // Identifier token
-    TOKEN_NUMBER,           // Number token
-    TOKEN_STRING,           // String token
-    
-    // Operators/brackets
-    TOKEN_OPERATOR,         // Operator token
-    TOKEN_PAREN,            // Brackets token
-    TOKEN_COLON,            // Colon token
-    
-    // Whitespace
-    TOKEN_NEWLINE,          // New line token
-    TOKEN_INDENT,           // Indent token
-    TOKEN_DEDENT,           // Dedent token
-
-    // Unknown tokens
-    TOKEN_EOF,              // End of file token
-    TOKEN_UNKNOWN           // Unknown token
-
-} TokenType;
+#define MAX_INDENT_STACK_SIZE 100      // Max amount of indentation levels
+#define NUM_TOKEN_PATTERNS 7           // The number of token patterns in the TOKEN_PATTERNS array
 
 
 // Array of regex patterns for different tokens
@@ -62,47 +38,19 @@ const TokenType TYPES[] = {
 };
 
 
-// Token structure defining type and value
-typedef struct 
-{
-    TokenType type;     // Token type
-    char *lexeme;       // String with value of the token
-    int lineNum;           // Line number token is found on
-} Token;
-
-
-static Token tokens[MAX_TOKENS];
-int tokenCount = 0;
-
 int indentStack[MAX_INDENT_STACK_SIZE];
 int indentTop = 0;
 
 
 /**
- * Adds a Token to the tokens array
- * @param type A TokenType of the token to add to the array
- * @param lexeme A character array of the value of the token
- * @param lineNum An integer line number that the token appears on
- * @see
- * @return
- */
-void add_token(TokenType type, const char *lexeme, int lineNum) 
-{
-    tokens[tokenCount].type = type;
-    tokens[tokenCount].lexeme = strdup(lexeme);
-    tokens[tokenCount].lineNum = lineNum;
-    tokenCount++;
-}
-
-
-/**
  * Handles changes in indentation and when to add indent and dedent tokens
+ * @param tokenList A pointer to the TokenList tokens should be added to
  * @param newIndent The new indentation level of the current line
  * @param lineNum An integer line number currently operating on
  * @see
  * @return
  */
-void handle_indentation(int newIndent, int lineNum) 
+void handle_indentation(TokenList *tokenList, int newIndent, int lineNum) 
 {
     int current_indent = indentStack[indentTop - 1];
 
@@ -110,7 +58,7 @@ void handle_indentation(int newIndent, int lineNum)
     {
         // Indent token if indentation is higher than the previous indent
         indentStack[indentTop++] = newIndent;
-        add_token(TOKEN_INDENT, "<INDENT>", lineNum);
+        append_token(tokenList, TOKEN_INDENT, "<INDENT>", lineNum);
     } 
     else 
     {   
@@ -119,7 +67,7 @@ void handle_indentation(int newIndent, int lineNum)
         {
             indentTop--;
             current_indent = indentStack[indentTop - 1];
-            add_token(TOKEN_DEDENT, "<DEDENT>", lineNum);
+            append_token(tokenList, TOKEN_DEDENT, "<DEDENT>", lineNum);
         }
 
         if (newIndent != current_indent)
@@ -133,12 +81,13 @@ void handle_indentation(int newIndent, int lineNum)
 
 /**
  * Tokenises a line provided as a string
+ * @param tokenList A pointer to the TokenList tokens should be added to
  * @param line A pointer to the start of the line
  * @param lineNum An integer line number of the current line
  * @see
  * @return
  */
-void tokenise_line(char *line, int lineNum)
+void tokenise_line(TokenList *tokenList, char *line, int lineNum)
 {
     int indent = 0;
     char *cursor = line;
@@ -163,7 +112,7 @@ void tokenise_line(char *line, int lineNum)
     }
 
     // Handles indentation
-    handle_indentation(indent, lineNum);
+    handle_indentation(tokenList, indent, lineNum);
 
     // Tokenises the rest of the line
     while (*cursor)
@@ -199,7 +148,7 @@ void tokenise_line(char *line, int lineNum)
                 lexeme[len] = '\0';
                 
                 // Add a token to the token list
-                add_token(TYPES[i], lexeme, lineNum);
+                append_token(tokenList, TYPES[i], lexeme, lineNum);
                 free(lexeme);
 
                 // Move past token if one found
@@ -217,7 +166,7 @@ void tokenise_line(char *line, int lineNum)
         {
             char unknown[2] = {*cursor, '\0'};
             printf("UNKNOWN TOKEN: %d\n", *cursor);
-            add_token(TOKEN_UNKNOWN, unknown, lineNum);
+            append_token(tokenList, TOKEN_UNKNOWN, unknown, lineNum);
             cursor++;
         }
     }
@@ -228,9 +177,9 @@ void tokenise_line(char *line, int lineNum)
  * Tokenises a a whole file and populates the tokens array with Token structs
  * @param filePath A string of the filePath of the file to tokenise
  * @see
- * @return 0 if successful tokenisation, 1 if tokenisation failed
+ * @return A pointer to the TokenList containing all of the tokens from the tokenised file
  */
-int tokenise(const char *filePath) 
+TokenList *tokenise(const char *filePath) 
 {
     FILE *scriptPtr;
     indentStack[indentTop++] = 0;
@@ -241,73 +190,32 @@ int tokenise(const char *filePath)
     if (scriptPtr == NULL) 
     {
         fprintf(stderr, "Error opening file");
-        return 1;
+        return NULL;
     }
+
+    // Create a new TokenList
+    TokenList *tokenList = new_tokenlist();
 
     // Read and tokenise each line
     char line[1024];
     while (fgets(line, sizeof(line), scriptPtr) != NULL) 
     {
-        tokenise_line(line, lineNum++);
+        tokenise_line(tokenList, line, lineNum++);
     }
 
     // Add remaining DEDENTs
     while (indentTop > 1)
     {
         indentTop--;
-        add_token(TOKEN_DEDENT, "<DEDENT>", lineNum);
+        append_token(tokenList, TOKEN_DEDENT, "<DEDENT>", lineNum);
     }
 
-    add_token(TOKEN_EOF, "<EOF>", lineNum);
+    append_token(tokenList, TOKEN_EOF, "<EOF>", lineNum);
 
     fclose(scriptPtr);
-    return 0;
+    return tokenList;
 }
 
-
-/**
- * Frees the tokens in the list from memory
- * @param None
- * @see
- * @return
- */
-void free_token_list()
-{
-    int i;
-
-    for (int i = 0; i < tokenCount; i++) 
-    {
-        free(tokens[i].lexeme);
-    }
-}
-
-
-/**
- * Prints the token list
- * @param None
- * @see
- * @return
- */
-void print_token_list()
-{   
-    int i;
-
-    for (int i = 0; i < tokenCount; i++) 
-    {
-        printf("Line %2d: %-12s %s\n", tokens[i].lineNum,
-               (tokens[i].type == TOKEN_IDENTIFIER) ? "IDENTIFIER" :
-               (tokens[i].type == TOKEN_NUMBER) ? "NUMBER" :
-               (tokens[i].type == TOKEN_STRING) ? "STRING" :
-               (tokens[i].type == TOKEN_OPERATOR) ? "OPERATOR" :
-               (tokens[i].type == TOKEN_PAREN) ? "PAREN" :
-               (tokens[i].type == TOKEN_COLON) ? "COLON" :
-               (tokens[i].type == TOKEN_NEWLINE) ? "NEWLINE" :
-               (tokens[i].type == TOKEN_INDENT) ? "INDENT" :
-               (tokens[i].type == TOKEN_DEDENT) ? "DEDENT" :
-               (tokens[i].type == TOKEN_EOF) ? "EOF" : "UNKNOWN",
-               tokens[i].lexeme);
-    }
-}
 
 
 int main(int argc, char **argv)
@@ -319,10 +227,10 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    tokenise(argv[1]);
+    TokenList *tokenList = tokenise(argv[1]);
 
-    print_token_list();
-    free_token_list();
+    print_tokenlist(tokenList);
+    free_tokenlist(tokenList);
 
     return 0;
 }
