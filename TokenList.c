@@ -4,12 +4,7 @@
 
 #include "TokenList.h"
 
-/**
- * Initialises and allocates memory for a new TokenList
- *
- * @see
- * @return A pointer to the newly created TokenList
- */
+
 TokenList *new_tokenlist()
 {
     TokenList *newList = (TokenList *) malloc(sizeof(TokenList));
@@ -21,15 +16,6 @@ TokenList *new_tokenlist()
 }
 
 
-/**
- * Appends a new token to a TokenLIst
- * @param list The TokenList to append to
- * @param type The TokenType of the Token to append
- * @param lexeme A character array storing the value of the token (must be null terminated)
- * @param lineNum The line number that the Token occurs on
- * @see
- * @return
- */
 void append_token(TokenList *list, TokenType type, const char *lexeme, int lineNum)
 {
     Token *newToken = (Token *) malloc(sizeof(Token));
@@ -64,12 +50,6 @@ void append_token(TokenList *list, TokenType type, const char *lexeme, int lineN
 }
 
 
-/**
- * Prints out the contents of a TokenList
- * @param list The TokenListNode to print out
- * @see
- * @return
- */
 void print_tokenlist(TokenList *list)
 {
     // If list is empty, return early and print message
@@ -87,8 +67,10 @@ void print_tokenlist(TokenList *list)
         (current->data->type == TOKEN_IDENTIFIER) ? "IDENTIFIER" :
         (current->data->type == TOKEN_NUMBER) ? "NUMBER" :
         (current->data->type == TOKEN_STRING) ? "STRING" :
+        (current->data->type == TOKEN_ASSIGNMENT) ? "ASSIGNMENT" :
         (current->data->type == TOKEN_OPERATOR) ? "OPERATOR" :
-        (current->data->type == TOKEN_PAREN) ? "PAREN" :
+        (current->data->type == TOKEN_LPAREN) ? "LPAREN" :
+        (current->data->type == TOKEN_RPAREN) ? "RPAREN" :
         (current->data->type == TOKEN_COLON) ? "COLON" :
         (current->data->type == TOKEN_NEWLINE) ? "NEWLINE" :
         (current->data->type == TOKEN_INDENT) ? "INDENT" :
@@ -103,12 +85,6 @@ void print_tokenlist(TokenList *list)
 }
 
 
-/**
- * Frees a single node of a TokenList and all the data inside it
- * @param list The TokenListNode to free
- * @see
- * @return
- */
 void free_tokenlist_node(TokenListNode *node)
 {
     free(node->data->lexeme);
@@ -117,12 +93,6 @@ void free_tokenlist_node(TokenListNode *node)
 }
 
 
-/**
- * Frees a tokenlist and all the data inside it
- * @param list The TokenList to free
- * @see
- * @return
- */
 void free_tokenlist(TokenList *list)
 {
     if (list->head)

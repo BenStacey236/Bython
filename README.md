@@ -4,7 +4,7 @@ A recreation of the Python interpreter, written in C. Aiming to implement as man
 ## Useage
 To build the program, run `make` in terminal, this should build the project an compile everything into a single executable. 
 
-Currently, it compiles into `tokeniser`, so to then run the interpreter, you should run `./tokeniser <filePath>`, where filePath is a path to a .py file that you want to run.
+Currently, it compiles into `bython`, so to then run the interpreter, you should run `./bython <filePath>`, where filePath is a path to a .py file that you want to run.
 
 To clean up the build after running, you can run `make clean` if you want to (this should remove the build folder with all compiled .o files in it)
 

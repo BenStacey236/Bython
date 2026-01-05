@@ -10,7 +10,7 @@ SRCS := $(wildcard *.c)
 OBJS := $(patsubst %.c,$(OBJDIR)/%.o,$(SRCS))
 
 # Output binary
-TARGET = tokeniser
+TARGET = bython
 
 # Default rule
 all: $(TARGET)

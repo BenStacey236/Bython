@@ -7,17 +7,19 @@
 #include "TokenList.h"
 
 #define MAX_INDENT_STACK_SIZE 100      // Max amount of indentation levels
-#define NUM_TOKEN_PATTERNS 7           // The number of token patterns in the TOKEN_PATTERNS array
+#define NUM_TOKEN_PATTERNS 9           // The number of token patterns in the TOKEN_PATTERNS array
 
 
 // Array of regex patterns for different tokens
-const char *TOKEN_PATTERNS[] = {
+static const char *TOKEN_PATTERNS[] = {
     "^[a-zA-Z_][a-zA-Z0-9_]*",                      // TOKEN_IDENTIFIER
     "^[0-9]+(\\.[0-9]+)?",                          // TOKEN_NUMBER
     "^\"([^\"\\\\]|\\\\.)*\"|^'([^'\\\\]|\\\\.)*'", // TOKEN_STRING
 
-    "^[\\+\\-\\*/=<>]=?",                             // TOKEN_OPERATOR
-    "^[({})]",                                      // TOKEN_PAREN
+    "^=",                                           // TOKEN_ASSIGNMENT                  
+    "^[\\+\\-\\*/=<>]=?",                           // TOKEN_OPERATOR
+    "^[({]",                                        // TOKEN_LPAREN
+    "^[})]",                                        // TOKEN_RPAREN
     "^:",                                           // TOKEN_COLON
 
     "^\r?\n"                                        // TOKEN_NEWLINE
@@ -25,32 +27,33 @@ const char *TOKEN_PATTERNS[] = {
 
 
 // Array of token types matching TOKEN_PATTERNS array
-const TokenType TYPES[] = {
+static const TokenType TYPES[] = {
     TOKEN_IDENTIFIER,
     TOKEN_NUMBER,
     TOKEN_STRING,
 
+    TOKEN_ASSIGNMENT,
     TOKEN_OPERATOR,
-    TOKEN_PAREN,
+    TOKEN_LPAREN,
+    TOKEN_RPAREN,
     TOKEN_COLON,
 
     TOKEN_NEWLINE
 };
 
 
-int indentStack[MAX_INDENT_STACK_SIZE];
-int indentTop = 0;
+static int indentStack[MAX_INDENT_STACK_SIZE];
+static int indentTop = 0;
 
 
 /**
  * Handles changes in indentation and when to add indent and dedent tokens
+ * 
  * @param tokenList A pointer to the TokenList tokens should be added to
  * @param newIndent The new indentation level of the current line
  * @param lineNum An integer line number currently operating on
- * @see
- * @return
  */
-void handle_indentation(TokenList *tokenList, int newIndent, int lineNum) 
+static void handle_indentation(TokenList *tokenList, int newIndent, int lineNum) 
 {
     int current_indent = indentStack[indentTop - 1];
 
@@ -81,13 +84,12 @@ void handle_indentation(TokenList *tokenList, int newIndent, int lineNum)
 
 /**
  * Tokenises a line provided as a string
+ * 
  * @param tokenList A pointer to the TokenList tokens should be added to
  * @param line A pointer to the start of the line
  * @param lineNum An integer line number of the current line
- * @see
- * @return
  */
-void tokenise_line(TokenList *tokenList, char *line, int lineNum)
+static void tokenise_line(TokenList *tokenList, char *line, int lineNum)
 {
     int indent = 0;
     char *cursor = line;
@@ -173,12 +175,6 @@ void tokenise_line(TokenList *tokenList, char *line, int lineNum)
 }
 
 
-/**
- * Tokenises a a whole file and populates the tokens array with Token structs
- * @param filePath A string of the filePath of the file to tokenise
- * @see
- * @return A pointer to the TokenList containing all of the tokens from the tokenised file
- */
 TokenList *tokenise(const char *filePath) 
 {
     FILE *scriptPtr;
@@ -214,23 +210,4 @@ TokenList *tokenise(const char *filePath)
 
     fclose(scriptPtr);
     return tokenList;
-}
-
-
-
-int main(int argc, char **argv)
-{
-    // Check for correct useage
-    if (argc != 2)
-    {
-        fprintf(stderr, "Incorrect Useage: %s <script.py>\n", argv[0]);
-        return 1;
-    }
-
-    TokenList *tokenList = tokenise(argv[1]);
-
-    print_tokenlist(tokenList);
-    free_tokenlist(tokenList);
-
-    return 0;
 }

@@ -1,11 +1,12 @@
-// ifndef ensuring that header file can only be included once to prevent errors
 #ifndef TOKEN_LIST_H
 #define TOKEN_LIST_H
 
 
 /* ----- Type Declarations ----- */
 
-// Enum defining token types
+/**
+ * Enum defining token types
+ */
 typedef enum
 {   
     TOKEN_IDENTIFIER,       // Identifier token
@@ -13,8 +14,10 @@ typedef enum
     TOKEN_STRING,           // String token
     
     // Operators/brackets
+    TOKEN_ASSIGNMENT,       // Assignment operator
     TOKEN_OPERATOR,         // Operator token
-    TOKEN_PAREN,            // Brackets token
+    TOKEN_LPAREN,            // Left brackets token
+    TOKEN_RPAREN,            // Right brackets token
     TOKEN_COLON,            // Colon token
     
     // Whitespace
@@ -29,7 +32,9 @@ typedef enum
 } TokenType;
 
 
-// Token structure defining type and value
+/**
+ * Token structure defining type and value
+ */
 typedef struct 
 {
     TokenType type;     // Token type
@@ -38,9 +43,10 @@ typedef struct
 } Token;
 
 
-// TokenList Node structure defining pointers to data, next and previous nodes
+/**
+ * TokenList Node structure defining pointers to data, next and previous nodes
+ */
 typedef struct TokenListNode TokenListNode;
-
 struct TokenListNode
 {   
     Token *data;
@@ -49,7 +55,9 @@ struct TokenListNode
 };
 
 
-// TokenList structure defining head, tail and length
+/**
+ * TokenList structure defining head, tail, and length
+ */
 typedef struct
 {
     TokenListNode *head;
@@ -60,10 +68,43 @@ typedef struct
 
 /* ----- Function Declarations ----- */
 
+/**
+ * Initialises and allocates memory for a new TokenList
+ *
+ * @return A pointer to the newly created TokenList
+ */
 TokenList *new_tokenlist();
+
+/**
+ * Appends a new token to a `TokenList`
+ * 
+ * @param list The TokenList to append to
+ * @param type The TokenType of the Token to append
+ * @param lexeme A character array storing the value of the token (must be null terminated)
+ * @param lineNum The line number that the Token occurs on
+ */
 void append_token(TokenList *list, TokenType type, const char *lexeme, int lineNum);
+
+/**
+ * Prints out the contents of a `TokenList`
+ * 
+ * @param list The `TokenListNode` to print out
+ */
 void print_tokenlist(TokenList *list);
+
+
+/**
+ * Frees a single node of a `TokenList` and all the data inside it
+ * 
+ * @param list The `TokenListNode` to free
+ */
 void free_tokenlist_node(TokenListNode *node);
+
+/**
+ * Frees a `TokenList` and all the data inside it
+ * 
+ * @param list The `TokenList` to free
+ */
 void free_tokenlist(TokenList *list);
 
 #endif // TOKEN_LIST_H
