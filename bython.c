@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "tokeniser.h"
+#include "parser.h"
 #include "ByDict.h"
 
 
@@ -16,11 +17,18 @@ int main(int argc, char **argv)
     TokenList *tokenList = tokenise(argv[1]);
 
     print_tokenlist(tokenList);
+
+    ASTNode *root = parse_program(tokenList);
+    printf("\n");
+    print_AST_rpn(root);
+
+    free_AST(root);
     free_tokenlist(tokenList);
 
     // Dictionary demo
     ByDict *dict = bydict_new();
 
+    printf("\n\n");
     bydict_put(dict, "name", "Ben");
     bydict_print(dict);
     bydict_put(dict, "age", "18");

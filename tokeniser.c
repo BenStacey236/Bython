@@ -17,7 +17,7 @@ static const char *TOKEN_PATTERNS[] = {
     "^\"([^\"\\\\]|\\\\.)*\"|^'([^'\\\\]|\\\\.)*'", // TOKEN_STRING
 
     "^=",                                           // TOKEN_ASSIGNMENT                  
-    "^[\\+\\-\\*/=<>]=?",                           // TOKEN_OPERATOR
+    "^[\\+-\\*/=<>]=?",                           // TOKEN_OPERATOR
     "^[({]",                                        // TOKEN_LPAREN
     "^[})]",                                        // TOKEN_RPAREN
     "^:",                                           // TOKEN_COLON
